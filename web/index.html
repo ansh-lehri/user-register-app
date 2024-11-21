@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px 0;
+      font-size: 14px;
+    }
+    button {
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .user-list {
+      margin-top: 20px;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .user-list th, .user-list td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    .user-list th {
+      background-color: #f2f2f2;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>User Management</h1>
+
+  <!-- Form to Submit New User -->
+  <div>
+    <h2>Create New User</h2>
+    <label for="name">Name:</label>
+    <input type="text" id="name" placeholder="Enter name">
+    <label for="email">Email:</label>
+    <input type="email" id="email" placeholder="Enter email">
+    <button onclick="createUser()">Submit</button>
+  </div>
+
+  <!-- Button to Fetch and Display Users -->
+  <div>
+    <h2>All Users</h2>
+    <button onclick="getUsers()">Show</button>
+    <table class="user-list" id="userTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const BASE_URL = 'http://35.207.255.22:3000'; // Replace <backend-ip> with actual backend IP or hostname
+
+    // Function to Create a New User (POST /users)
+    async function createUser() {
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+
+      if (!name || !email) {
+        alert('Please fill in both name and email.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${BASE_URL}/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name, email }),
+        });
+
+        if (response.ok) {
+          const user = await response.json();
+          alert(`User created successfully with ID: ${user.id}`);
+          document.getElementById('name').value = '';
+          document.getElementById('email').value = '';
+        } else {
+          alert('Failed to create user. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please check the console for details.');
+      }
+    }
+
+    // Function to Fetch and Display All Users (GET /users)
+    async function getUsers() {
+      try {
+        const response = await fetch(`${BASE_URL}/users`);
+        if (response.ok) {
+          const users = await response.json();
+          const userTableBody = document.querySelector('#userTable tbody');
+          userTableBody.innerHTML = ''; // Clear existing rows
+
+          users.forEach(user => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${user.id}</td>
+              <td>${user.name}</td>
+              <td>${user.email}</td>
+            `;
+            userTableBody.appendChild(row);
+          });
+        } else {
+          alert('Failed to fetch users. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please check the console for details.');
+      }
+    }
+  </script>
+</body>
+</html>
